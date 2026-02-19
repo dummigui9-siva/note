@@ -295,8 +295,25 @@ function loadApp(){
 }
 
 function getUserData(){
-    return getUsers()[currentUser];
+    let users = getUsers();
+
+    if(!users[currentUser]){
+        users[currentUser] = {
+            password: "",
+            passcode: "",
+            notes: []
+        };
+        saveUsers(users);
+    }
+
+    if(!users[currentUser].notes){
+        users[currentUser].notes = [];
+        saveUsers(users);
+    }
+
+    return users[currentUser];
 }
+
 function saveUserData(data){
     let users=getUsers();
     users[currentUser]=data;
@@ -305,7 +322,9 @@ function saveUserData(data){
 
 /* NOTES */
 function createNote(){
-    let data=getUserData();
+let data = getUserData();
+if(!data.notes) data.notes = [];
+
     data.notes.push({
         id:Date.now(),
         content:"",
