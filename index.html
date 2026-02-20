@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body{
     margin:0;
     font-family:-apple-system,BlinkMacSystemFont,sans-serif;
@@ -131,9 +130,7 @@ body.dark textarea{ color:white; }
 
 <body>
 
-<!-- AUTH -->
 <div class="auth-container" id="authContainer">
-
     <div class="auth-box" id="loginBox">
         <h2>Login</h2>
         <input id="loginUser" placeholder="Username">
@@ -166,10 +163,8 @@ body.dark textarea{ color:white; }
         <button onclick="recover()">Recover</button>
         <p onclick="showLogin()">Back to Login</p>
     </div>
-
 </div>
 
-<!-- APP -->
 <div id="app">
     <div class="topbar">
         <div id="welcomeUser"></div>
@@ -181,7 +176,7 @@ body.dark textarea{ color:white; }
 
     <div class="controls">
         <button onclick="createNote()">New Note</button>
-        <button onclick="exportExcel()">Export Excel</button>
+        <button id="exportBtn" onclick="exportExcel()">Export Excel</button>
         <button onclick="backupUser()">Backup</button>
         <input type="file" id="importFile"
         onchange="importBackup(event)" hidden>
@@ -205,16 +200,26 @@ let draggedId = null;
 function getUsers(){
     return JSON.parse(localStorage.getItem("users")) || {};
 }
-
 function saveUsers(users){
     localStorage.setItem("users", JSON.stringify(users));
 }
 
+/* EXPORT BUTTON LOGIC */
+function updateExportButton(){
+    if(!currentUser) return;
+    let data = getUserData();
+    let btn = document.getElementById("exportBtn");
+    if(!btn) return;
+
+    let hasValidContent = data.notes.some(n => n.content && n.content.trim() !== "");
+    btn.disabled = !hasValidContent;
+}
+
 /* AUTH */
 function register(){
-    let u = regUser.value.trim();
-    let p = regPass.value.trim();
-    let c = regCode.value.trim();
+    let u = document.getElementById("regUser").value.trim();
+    let p = document.getElementById("regPass").value.trim();
+    let c = document.getElementById("regCode").value.trim();
     if(!u || !p || !c) return alert("Fill all fields");
 
     let users = getUsers();
@@ -227,23 +232,25 @@ function register(){
 }
 
 function login(){
-    let u = loginUser.value.trim();
-    let p = loginPass.value.trim();
+    let u = document.getElementById("loginUser").value.trim();
+    let p = document.getElementById("loginPass").value.trim();
     let users = getUsers();
 
     if(users[u] && users[u].password === p){
         currentUser = u;
         localStorage.setItem("loggedInUser", u);
         loadApp();
-    } else alert("Invalid credentials");
+    } else {
+        alert("Invalid credentials");
+    }
 }
 
 function recover(){
-    let u = forgotUser.value.trim();
-    let c = forgotCode.value.trim();
+    let u = document.getElementById("forgotUser").value.trim();
+    let c = document.getElementById("forgotCode").value.trim();
     let users = getUsers();
     if(users[u] && users[u].passcode === c){
-        alert("Password: "+users[u].password);
+        alert("Password: " + users[u].password);
     } else alert("Invalid details");
 }
 
@@ -252,242 +259,235 @@ function logout(){
     location.reload();
 }
 
-function showRegister(){ loginBox.style.display="none"; registerBox.style.display="block"; }
-function showLogin(){ registerBox.style.display="none"; forgotBox.style.display="none"; loginBox.style.display="block"; }
-function showForgot(){ loginBox.style.display="none"; forgotBox.style.display="block"; }
-
-/* GLOBAL IMPORT */
-function globalImport(event){
-    let file = event.target.files[0];
-    if(!file) return;
-
-    let reader = new FileReader();
-    reader.onload = function(e){
-        try{
-            let backup = JSON.parse(e.target.result);
-
-            if(!backup.username || !backup.password || !backup.notes){
-                alert("Invalid backup file");
-                return;
-            }
-
-            let users = getUsers();
-            users[backup.username] = {
-                password: backup.password,
-                passcode: backup.passcode,
-                notes: backup.notes
-            };
-            saveUsers(users);
-
-            alert("Account restored successfully!");
-        } catch {
-            alert("Invalid file format");
-        }
-    };
-    reader.readAsText(file);
+function showRegister(){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("registerBox").style.display="block";
+}
+function showLogin(){
+    document.getElementById("registerBox").style.display="none";
+    document.getElementById("forgotBox").style.display="none";
+    document.getElementById("loginBox").style.display="block";
+}
+function showForgot(){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("forgotBox").style.display="block";
 }
 
 /* APP */
 function loadApp(){
-    authContainer.style.display = "none";
-    app.style.display = "block";
-    welcomeUser.innerText = "Welcome, " + currentUser;
+    document.getElementById("authContainer").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("welcomeUser").innerText="Welcome, "+currentUser;
     renderNotes();
+    updateExportButton();
 }
 
-/* SAFE USER DATA ACCESS */
+/* USER DATA */
 function getUserData(){
     let users = getUsers();
-
     if(!users[currentUser]){
-        users[currentUser] = { password: "", passcode: "", notes: [] };
+        users[currentUser]={ password:"", passcode:"", notes:[] };
     }
-
     if(!users[currentUser].notes){
-        users[currentUser].notes = [];
+        users[currentUser].notes=[];
     }
-
     saveUsers(users);
     return users[currentUser];
 }
 
 function saveUserData(data){
-    let users = getUsers();
-    users[currentUser] = data;
+    let users=getUsers();
+    users[currentUser]=data;
     saveUsers(users);
+}
+
+/* BACKUP */
+function backupUser(){
+    if(!currentUser) return alert("Not logged in");
+    let users=getUsers();
+    let backupData={};
+    backupData[currentUser]=users[currentUser];
+
+    let blob=new Blob([JSON.stringify(backupData,null,2)],{type:"application/json"});
+    let a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=currentUser+"_backup.json";
+    a.click();
+}
+
+/* IMPORT (LOGGED IN) */
+function importBackup(event){
+    let file=event.target.files[0];
+    if(!file) return;
+
+    let reader=new FileReader();
+    reader.onload=function(e){
+        let imported=JSON.parse(e.target.result);
+        let users=getUsers();
+        if(imported[currentUser]){
+            users[currentUser]=imported[currentUser];
+            saveUsers(users);
+            alert("Backup Imported!");
+            renderNotes();
+            updateExportButton();
+        }else{
+            alert("Invalid backup file for this user.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+/* GLOBAL IMPORT */
+function globalImport(event){
+    let file=event.target.files[0];
+    if(!file) return;
+
+    let reader=new FileReader();
+    reader.onload=function(e){
+        let imported=JSON.parse(e.target.result);
+        let users=getUsers();
+        Object.assign(users,imported);
+        saveUsers(users);
+        alert("Backup Imported Successfully! You can now login.");
+    };
+    reader.readAsText(file);
 }
 
 /* NOTES */
 function createNote(){
-    if(!currentUser) return alert("Not logged in");
-
-    let data = getUserData();
+    if(!currentUser) return;
+    let data=getUserData();
     data.notes.push({
-        id: Date.now(),
-        content: "",
-        color: "#fff9a8",
-        created: ""   // Blank date by default
+        id:Date.now(),
+        content:"",
+        color:"#fff9a8",
+        created:""
     });
     saveUserData(data);
     renderNotes();
 }
 
 function renderNotes(){
-    notesContainer.innerHTML = "";
-    let data = getUserData();
-    let search = document.getElementById("searchInput")?.value?.toLowerCase() || "";
+    if(!currentUser) return;
+
+    let container=document.getElementById("notesContainer");
+    container.innerHTML="";
+    let data=getUserData();
+    let search=document.getElementById("searchInput")?.value?.toLowerCase()||"";
 
     data.notes
-        .filter(n => n.content.toLowerCase().includes(search))
-        .forEach(note => {
-            let div = document.createElement("div");
-            div.className = "note";
-            div.style.background = note.color;
-            div.draggable = true;
+    .filter(n=>(n.content||"").toLowerCase().includes(search))
+    .forEach(note=>{
+        let div=document.createElement("div");
+        div.className="note";
+        div.style.background=note.color;
+        div.draggable=true;
 
-            div.innerHTML = `
-<input type="text" 
-placeholder="Enter date (dd/mm/yyyy or mm/dd/yyyy)"
-value="${note.created || ''}"
-oninput="updateDate(${note.id}, this.value)">
-
-<textarea oninput="updateNote(${note.id}, this.value)">${note.content || ''}</textarea>
-
-<input type="color" value="${note.color || '#fff9a8'}" onchange="changeColor(${note.id}, this.value)">
-
+        div.innerHTML=`
+<input type="text" value="${note.created||''}" oninput="updateDate(${note.id},this.value)">
+<textarea oninput="updateNote(${note.id},this.value)">${note.content||''}</textarea>
+<input type="color" value="${note.color}" onchange="changeColor(${note.id},this.value)">
 <div class="actions">
-    <button onclick="deleteNote(${note.id})">🗑</button>
-</div>
-`;
+<button onclick="deleteNote(${note.id})">🗑</button>
+</div>`;
 
-            div.addEventListener("dragstart", () => draggedId = note.id);
-            div.addEventListener("dragover", (e) => e.preventDefault());
-            div.addEventListener("drop", () => reorderNotes(draggedId, note.id));
+        div.addEventListener("dragstart",()=>draggedId=note.id);
+        div.addEventListener("dragover",(e)=>e.preventDefault());
+        div.addEventListener("drop",()=>reorderNotes(draggedId,note.id));
 
-            notesContainer.appendChild(div);
-        });
+        container.appendChild(div);
+    });
+
+    updateExportButton();
 }
 
-function updateNote(id, value){
-    let data = getUserData();
-    let note = data.notes.find(n => n.id === id);
+function updateNote(id,value){
+    let data=getUserData();
+    let note=data.notes.find(n=>n.id===id);
     if(note){
-        note.content = value;
+        note.content=value;
         saveUserData(data);
+        updateExportButton();
     }
 }
 
-function updateDate(id, value){
-    let data = getUserData();
-    let note = data.notes.find(n => n.id === id);
+function updateDate(id,value){
+    let data=getUserData();
+    let note=data.notes.find(n=>n.id===id);
     if(note){
-        note.created = value;  // store exactly as typed
+        note.created=value;
         saveUserData(data);
     }
 }
 
 function deleteNote(id){
-    let data = getUserData();
-    data.notes = data.notes.filter(n => n.id !== id);
+    let data=getUserData();
+    data.notes=data.notes.filter(n=>n.id!==id);
     saveUserData(data);
     renderNotes();
 }
 
-function changeColor(id, color){
-    let data = getUserData();
-    let note = data.notes.find(n => n.id === id);
+function changeColor(id,color){
+    let data=getUserData();
+    let note=data.notes.find(n=>n.id===id);
     if(note){
-        note.color = color;
+        note.color=color;
         saveUserData(data);
     }
 }
 
-function reorderNotes(id1, id2){
-    let data = getUserData();
-    let notes = data.notes;
-    let i1 = notes.findIndex(n => n.id === id1);
-    let i2 = notes.findIndex(n => n.id === id2);
-    [notes[i1], notes[i2]] = [notes[i2], notes[i1]];
+function reorderNotes(id1,id2){
+    let data=getUserData();
+    let notes=data.notes;
+    let i1=notes.findIndex(n=>n.id===id1);
+    let i2=notes.findIndex(n=>n.id===id2);
+    [notes[i1],notes[i2]]=[notes[i2],notes[i1]];
     saveUserData(data);
     renderNotes();
 }
 
-/* EXPORT & BACKUP */
+/* EXPORT */
 function exportExcel(){
-    let data = getUserData();
-    let csv = "SNo,Created Date,Content\n";
+    let data=getUserData();
+    let hasValidContent=data.notes.some(n=>n.content&&n.content.trim()!=="");
+    if(!hasValidContent){
+        alert("No valid note content to export.");
+        return;
+    }
 
-    data.notes.forEach((n, index) => {
-        let created = n.created && n.created.trim() !== "" ? n.created : "";
-        let content = n.content ? n.content.replace(/"/g, '""') : "";
-        csv += `${index + 1},"${created}","${content}"\n`;
+    let csv="SNo,Created Date,Content\n";
+    data.notes.forEach((n,index)=>{
+        let created=n.created||"";
+        let content=n.content?n.content.replace(/"/g,'""'):"";
+        csv+=`${index+1},"${created}","${content}"\n`;
     });
 
-    let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = currentUser + "_notes_report.csv";
+    let blob=new Blob([csv],{type:"text/csv"});
+    let a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=currentUser+"_notes_report.csv";
     a.click();
-}
-
-function backupUser(){
-    let data = getUserData();
-    let backup = {
-        username: currentUser,
-        password: data.password,
-        passcode: data.passcode,
-        notes: data.notes
-    };
-
-    let blob = new Blob([JSON.stringify(backup, null, 2)], {type: "application/json"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = currentUser + "_backup.json";
-    a.click();
-}
-
-function importBackup(event){
-    let file = event.target.files[0];
-    if(!file) return;
-
-    let reader = new FileReader();
-    reader.onload = function(e){
-        try{
-            let backup = JSON.parse(e.target.result);
-            let users = getUsers();
-            users[currentUser] = {
-                password: backup.password,
-                passcode: backup.passcode,
-                notes: backup.notes
-            };
-            saveUsers(users);
-            renderNotes();
-            alert("Backup imported");
-        } catch {
-            alert("Invalid file");
-        }
-    };
-    reader.readAsText(file);
 }
 
 /* DARK MODE */
 function toggleDark(){
     document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+    localStorage.setItem("darkMode",document.body.classList.contains("dark"));
 }
 
 /* AUTO LOGIN */
-window.onload = function(){
-    let u = localStorage.getItem("loggedInUser");
+window.onload=function(){
+    let u=localStorage.getItem("loggedInUser");
     if(u){
-        currentUser = u;
+        currentUser=u;
         loadApp();
     }
-    if(localStorage.getItem("darkMode") === "true"){
+    if(localStorage.getItem("darkMode")==="true"){
         document.body.classList.add("dark");
     }
-}
+};
 
 </script>
+
 </body>
 </html>
