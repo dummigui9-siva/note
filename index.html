@@ -315,22 +315,37 @@ function backupUser(){
     a.click();
 }
 
-/* IMPORT (LOGGED IN) */
+/* IMPORT (LOGGED IN) WITH MERGE */
 function importBackup(event){
-    let file=event.target.files[0];
+    let file = event.target.files[0];
     if(!file) return;
 
-    let reader=new FileReader();
-    reader.onload=function(e){
-        let imported=JSON.parse(e.target.result);
-        let users=getUsers();
+    let reader = new FileReader();
+    reader.onload = function(e){
+        let imported = JSON.parse(e.target.result);
+        let users = getUsers();
+
         if(imported[currentUser]){
-            users[currentUser]=imported[currentUser];
-            saveUsers(users);
-            alert("Backup Imported!");
+            let currentData = getUserData();
+            let importedData = imported[currentUser];
+
+            // Merge notes: only add new notes (avoid duplicates by ID)
+            let existingIds = new Set(currentData.notes.map(n => n.id));
+            importedData.notes.forEach(note => {
+                if(!existingIds.has(note.id)){
+                    currentData.notes.push(note);
+                }
+            });
+
+            // Keep existing password/passcode
+            currentData.password = currentData.password || importedData.password;
+            currentData.passcode = currentData.passcode || importedData.passcode;
+
+            saveUserData(currentData);
+            alert("Backup merged successfully!");
             renderNotes();
             updateExportButton();
-        }else{
+        } else {
             alert("Invalid backup file for this user.");
         }
     };
