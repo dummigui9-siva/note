@@ -2,506 +2,372 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Advanced Notes App</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModyNotes</title>
 
 <style>
 body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-    background:#f2f2f2;
-    transition:0.3s;
-}
-body.dark{
-    background:#1e1e1e;
-    color:white;
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(135deg,#d7dbe8,#f5f7fb);
 }
 
-/* AUTH */
-.auth-container{
-    display:flex;
-    height:100vh;
-    justify-content:center;
-    align-items:center;
-}
-.auth-box{
-    background:white;
-    padding:30px;
-    width:320px;
-    border-radius:12px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
-}
-body.dark .auth-box{
-    background:#2a2a2a;
-    color:white;
-}
-.auth-box input{
-    width:100%;
-    padding:10px;
-    margin:8px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-.auth-box button{
-    width:100%;
-    padding:10px;
-    margin-top:8px;
-    background:#007bff;
-    border:none;
-    color:white;
-    border-radius:6px;
-    cursor:pointer;
-}
-.auth-box p{
-    text-align:center;
-    cursor:pointer;
-    color:#007bff;
-    font-size:14px;
+/* ===== AUTH SCREEN ===== */
+.auth-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
-/* APP */
-#app{ display:none; }
-
-.topbar{
-    background:#007bff;
-    color:white;
-    padding:12px 20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.auth-card{
+  width:360px;
+  background:white;
+  border-radius:30px;
+  padding:40px 30px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.1);
 }
 
-.controls{
-    padding:15px 20px;
-}
-.controls button{
-    margin-right:10px;
-    padding:8px 12px;
-}
-.controls input{
-    padding:6px;
+.auth-card h2{
+  text-align:center;
+  margin-bottom:25px;
+  color:#1f2b4d;
 }
 
-.notes-container{
-    padding:20px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:15px;
+.auth-card input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:12px;
+  border:1px solid #e0e3ec;
+  background:#f7f9fc;
+}
+
+.auth-card button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin-top:10px;
+  cursor:pointer;
+}
+
+.primary{
+  background:#1f2b4d;
+  color:white;
+}
+
+.link{
+  background:none;
+  color:#1f2b4d;
+  text-decoration:underline;
+}
+
+.footer{
+  text-align:center;
+  font-size:12px;
+  margin-top:25px;
+  color:#888;
+}
+
+/* ===== APP ===== */
+#app{
+  display:none;
+  height:100vh;
+  overflow:hidden;
+}
+
+.app-header{
+  background:#1f2b4d;
+  color:white;
+  padding:20px;
+  border-bottom-left-radius:30px;
+  border-bottom-right-radius:30px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+.app-header h2{
+  margin:0;
+}
+
+.action-row{
+  margin-top:15px;
+}
+
+.action-row button{
+  background:white;
+  color:#1f2b4d;
+  border:none;
+  border-radius:20px;
+  padding:8px 15px;
+  margin-right:8px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.notes-area{
+  padding:20px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  overflow-y:auto;
+  height:calc(100vh - 170px);
 }
 
 .note{
-    width:220px;
-    min-height:170px;
-    padding:10px;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.15);
-    position:relative;
-    cursor:grab;
+  width:220px;
+  min-height:170px;
+  background:white;
+  border-radius:25px;
+  padding:15px;
+  position:relative;
+  box-shadow:0 15px 30px rgba(0,0,0,0.08);
 }
-body.dark .note{
-    box-shadow:0 5px 15px rgba(255,255,255,0.1);
-}
-.note textarea{
-    width:100%;
-    border:none;
-    background:transparent;
-    resize:none;
-    height:100px;
-    outline:none;
-}
-body.dark textarea{ color:white; }
 
-.note input[type="color"]{
-    margin-top:5px;
+.note textarea{
+  width:100%;
+  height:110px;
+  border:none;
+  resize:none;
+  outline:none;
+  background:transparent;
+  font-size:14px;
 }
-.note .actions{
-    position:absolute;
-    bottom:5px;
-    right:5px;
+
+.pin{
+  width:16px;
+  height:16px;
+  background:#ff4d4d;
+  border-radius:50%;
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  box-shadow:0 4px 8px rgba(0,0,0,0.2);
 }
+
 .note button{
-    border:none;
-    background:none;
-    cursor:pointer;
-    font-size:16px;
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  border-radius:15px;
+  padding:5px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+/* Floating Add Button */
+.fab{
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  width:60px;
+  height:60px;
+  background:#1f2b4d;
+  color:white;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:30px;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+button:disabled{
+  background:#ccc !important;
+  cursor:not-allowed;
 }
 </style>
 </head>
 
 <body>
 
-<div class="auth-container" id="authContainer">
-    <div class="auth-box" id="loginBox">
-        <h2>Login</h2>
-        <input id="loginUser" placeholder="Username">
-        <input id="loginPass" type="password" placeholder="Password">
-        <button onclick="login()">Login</button>
+<!-- AUTH -->
+<div class="auth-wrapper" id="authScreen">
+<div class="auth-card">
+<h2 id="authTitle">Login</h2>
 
-        <button onclick="document.getElementById('globalImportFile').click()">
-        Import Backup
-        </button>
-        <input type="file" id="globalImportFile"
-        onchange="globalImport(event)" hidden>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<input id="passcode" type="password" placeholder="Passcode" style="display:none;">
 
-        <p onclick="showRegister()">Register</p>
-        <p onclick="showForgot()">Forgot Password</p>
-    </div>
+<button class="primary" onclick="handleAuth()">Login</button>
+<button class="link" onclick="toggleMode()">Register</button>
+<button class="link" onclick="forgotPassword()">Forgot Password?</button>
+<button class="link" onclick="importJSON()">Import JSON Backup</button>
 
-    <div class="auth-box" id="registerBox" style="display:none;">
-        <h2>Register</h2>
-        <input id="regUser" placeholder="Username">
-        <input id="regPass" type="password" placeholder="Password">
-        <input id="regCode" placeholder="Passcode (Recovery)">
-        <button onclick="register()">Register</button>
-        <p onclick="showLogin()">Back to Login</p>
-    </div>
-
-    <div class="auth-box" id="forgotBox" style="display:none;">
-        <h2>Recover</h2>
-        <input id="forgotUser" placeholder="Username">
-        <input id="forgotCode" placeholder="Passcode">
-        <button onclick="recover()">Recover</button>
-        <p onclick="showLogin()">Back to Login</p>
-    </div>
+<div class="footer">
+© sivakumar 2026 | siva80mail@gmail.com
+</div>
+</div>
 </div>
 
+<!-- APP -->
 <div id="app">
-    <div class="topbar">
-        <div id="welcomeUser"></div>
-        <div>
-            <button onclick="toggleDark()">🌙</button>
-            <button onclick="logout()">Logout</button>
-        </div>
-    </div>
+<div class="app-header">
+<h2>ModyNotes</h2>
+<div class="action-row">
+<button id="exportCSVBtn" onclick="exportCSV()">Export CSV</button>
+<button onclick="exportJSON()">Export JSON</button>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
 
-    <div class="controls">
-        <button onclick="createNote()">New Note</button>
-        <button id="exportBtn" onclick="exportExcel()">Export Excel</button>
-        <button onclick="backupUser()">Backup</button>
-        <input type="file" id="importFile"
-        onchange="importBackup(event)" hidden>
-        <button onclick="document.getElementById('importFile').click()">
-        Import (Logged In)
-        </button>
-        <input type="text" id="searchInput"
-        placeholder="Search..."
-        oninput="renderNotes()">
-    </div>
-
-    <div class="notes-container" id="notesContainer"></div>
+<div class="notes-area" id="notesContainer"></div>
+<div class="fab" onclick="addNote()">+</div>
 </div>
 
 <script>
+let mode="login";
+let currentUser=null;
 
-let currentUser = null;
-let draggedId = null;
-
-/* STORAGE */
-function getUsers(){
-    return JSON.parse(localStorage.getItem("users")) || {};
-}
-function saveUsers(users){
-    localStorage.setItem("users", JSON.stringify(users));
-}
-
-/* EXPORT BUTTON LOGIC */
-function updateExportButton(){
-    if(!currentUser) return;
-    let data = getUserData();
-    let btn = document.getElementById("exportBtn");
-    if(!btn) return;
-
-    let hasValidContent = data.notes.some(n => n.content && n.content.trim() !== "");
-    btn.disabled = !hasValidContent;
+function toggleMode(){
+  if(mode==="login"){
+    mode="register";
+    document.getElementById("authTitle").innerText="Register";
+    document.getElementById("passcode").style.display="block";
+  }else{
+    mode="login";
+    document.getElementById("authTitle").innerText="Login";
+    document.getElementById("passcode").style.display="none";
+  }
 }
 
-/* AUTH */
-function register(){
-    let u = document.getElementById("regUser").value.trim();
-    let p = document.getElementById("regPass").value.trim();
-    let c = document.getElementById("regCode").value.trim();
-    if(!u || !p || !c) return alert("Fill all fields");
+function handleAuth(){
+  const u=username.value;
+  const p=password.value;
+  const pc=passcode.value;
 
-    let users = getUsers();
-    if(users[u]) return alert("User exists");
-
-    users[u] = { password: p, passcode: c, notes: [] };
-    saveUsers(users);
-    alert("Registered!");
-    showLogin();
-}
-
-function login(){
-    let u = document.getElementById("loginUser").value.trim();
-    let p = document.getElementById("loginPass").value.trim();
-    let users = getUsers();
-
-    if(users[u] && users[u].password === p){
-        currentUser = u;
-        localStorage.setItem("loggedInUser", u);
-        loadApp();
-    } else {
-        alert("Invalid credentials");
+  if(mode==="register"){
+    if(localStorage.getItem("user_"+u)){
+      alert("User exists");return;
     }
+    localStorage.setItem("user_"+u,JSON.stringify({username:u,password:p,passcode:pc,notes:[]}));
+    alert("Registered");
+    toggleMode();
+  }else{
+    const data=localStorage.getItem("user_"+u);
+    if(!data){alert("User not found");return;}
+    const user=JSON.parse(data);
+    if(user.password!==p){alert("Wrong password");return;}
+    currentUser=u;
+    showApp();
+  }
 }
 
-function recover(){
-    let u = document.getElementById("forgotUser").value.trim();
-    let c = document.getElementById("forgotCode").value.trim();
-    let users = getUsers();
-    if(users[u] && users[u].passcode === c){
-        alert("Password: " + users[u].password);
-    } else alert("Invalid details");
+function forgotPassword(){
+  const u=prompt("Username:");
+  const pc=prompt("Passcode:");
+  const data=localStorage.getItem("user_"+u);
+  if(!data){alert("User not found");return;}
+  const user=JSON.parse(data);
+  if(user.passcode===pc){
+    alert("Password: "+user.password);
+  }else alert("Wrong passcode");
 }
 
-function logout(){
-    localStorage.removeItem("loggedInUser");
-    location.reload();
+function showApp(){
+  authScreen.style.display="none";
+  app.style.display="block";
+  loadNotes();
 }
 
-function showRegister(){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("registerBox").style.display="block";
-}
-function showLogin(){
-    document.getElementById("registerBox").style.display="none";
-    document.getElementById("forgotBox").style.display="none";
-    document.getElementById("loginBox").style.display="block";
-}
-function showForgot(){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("forgotBox").style.display="block";
+function logout(){location.reload();}
+
+function loadNotes(){
+  const user=JSON.parse(localStorage.getItem("user_"+currentUser));
+  notesContainer.innerHTML="";
+  user.notes.forEach((n,i)=>createNote(n,i));
+  updateExportState();
 }
 
-/* APP */
-function loadApp(){
-    document.getElementById("authContainer").style.display="none";
-    document.getElementById("app").style.display="block";
-    document.getElementById("welcomeUser").innerText="Welcome, "+currentUser;
-    renderNotes();
-    updateExportButton();
+function saveUser(user){
+  localStorage.setItem("user_"+currentUser,JSON.stringify(user));
 }
 
-/* USER DATA */
-function getUserData(){
-    let users = getUsers();
-    if(!users[currentUser]){
-        users[currentUser]={ password:"", passcode:"", notes:[] };
-    }
-    if(!users[currentUser].notes){
-        users[currentUser].notes=[];
-    }
-    saveUsers(users);
-    return users[currentUser];
+function addNote(){
+  const user=JSON.parse(localStorage.getItem("user_"+currentUser));
+  user.notes.push({content:""});
+  saveUser(user);
+  loadNotes();
 }
 
-function saveUserData(data){
-    let users=getUsers();
-    users[currentUser]=data;
-    saveUsers(users);
+function createNote(note,index){
+  const div=document.createElement("div");
+  div.className="note";
+  div.innerHTML=`
+    <div class="pin"></div>
+    <textarea oninput="updateNote(${index},this.value)">${note.content}</textarea>
+    <button onclick="deleteNote(${index})">Delete</button>
+  `;
+  notesContainer.appendChild(div);
 }
 
-/* BACKUP */
-function backupUser(){
-    if(!currentUser) return alert("Not logged in");
-    let users=getUsers();
-    let backupData={};
-    backupData[currentUser]=users[currentUser];
-
-    let blob=new Blob([JSON.stringify(backupData,null,2)],{type:"application/json"});
-    let a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download=currentUser+"_backup.json";
-    a.click();
+function updateNote(index,value){
+  const user=JSON.parse(localStorage.getItem("user_"+currentUser));
+  user.notes[index].content=value;
+  saveUser(user);
+  updateExportState();
 }
 
-/* IMPORT (LOGGED IN) WITH MERGE */
-function importBackup(event){
-    let file = event.target.files[0];
-    if(!file) return;
+function deleteNote(index){
+  const user=JSON.parse(localStorage.getItem("user_"+currentUser));
+  user.notes.splice(index,1);
+  saveUser(user);
+  loadNotes();
+}
 
-    let reader = new FileReader();
-    reader.onload = function(e){
-        let imported = JSON.parse(e.target.result);
-        let users = getUsers();
+function updateExportState(){
+  const user=JSON.parse(localStorage.getItem("user_"+currentUser));
+  const hasData=user.notes.some(n=>n.content.trim()!=="");
+  exportCSVBtn.disabled=!hasData;
+}
 
-        if(imported[currentUser]){
-            let currentData = getUserData();
-            let importedData = imported[currentUser];
+function exportCSV(){
+  const user = JSON.parse(localStorage.getItem("user_" + currentUser));
 
-            // Merge notes: only add new notes (avoid duplicates by ID)
-            let existingIds = new Set(currentData.notes.map(n => n.id));
-            importedData.notes.forEach(note => {
-                if(!existingIds.has(note.id)){
-                    currentData.notes.push(note);
-                }
-            });
+  // Get only notes with content
+  const validNotes = user.notes
+    .filter(n => n.content.trim() !== "")
+    .map(n => `"${n.content.replace(/"/g,'""')}"`);
 
-            // Keep existing password/passcode
-            currentData.password = currentData.password || importedData.password;
-            currentData.passcode = currentData.passcode || importedData.passcode;
+  if(validNotes.length === 0) return;
 
-            saveUserData(currentData);
-            alert("Backup merged successfully!");
-            renderNotes();
-            updateExportButton();
-        } else {
-            alert("Invalid backup file for this user.");
-        }
+  // Column-wise (single row)
+  const csv = validNotes.join(",");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = currentUser + "_notes.csv";
+  a.click();
+}
+
+function exportJSON(){
+  const user=localStorage.getItem("user_"+currentUser);
+  const blob=new Blob([user],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=currentUser+"_backup.json";
+  a.click();
+}
+
+function importJSON(){
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept="application/json";
+  input.onchange=e=>{
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const data=JSON.parse(ev.target.result);
+      localStorage.setItem("user_"+data.username,JSON.stringify(data));
+      alert("Backup imported. Login now.");
     };
-    reader.readAsText(file);
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
 }
-
-/* GLOBAL IMPORT */
-function globalImport(event){
-    let file=event.target.files[0];
-    if(!file) return;
-
-    let reader=new FileReader();
-    reader.onload=function(e){
-        let imported=JSON.parse(e.target.result);
-        let users=getUsers();
-        Object.assign(users,imported);
-        saveUsers(users);
-        alert("Backup Imported Successfully! You can now login.");
-    };
-    reader.readAsText(file);
-}
-
-/* NOTES */
-function createNote(){
-    if(!currentUser) return;
-    let data=getUserData();
-    data.notes.push({
-        id:Date.now(),
-        content:"",
-        color:"#fff9a8",
-        created:""
-    });
-    saveUserData(data);
-    renderNotes();
-}
-
-function renderNotes(){
-    if(!currentUser) return;
-
-    let container=document.getElementById("notesContainer");
-    container.innerHTML="";
-    let data=getUserData();
-    let search=document.getElementById("searchInput")?.value?.toLowerCase()||"";
-
-    data.notes
-    .filter(n=>(n.content||"").toLowerCase().includes(search))
-    .forEach(note=>{
-        let div=document.createElement("div");
-        div.className="note";
-        div.style.background=note.color;
-        div.draggable=true;
-
-        div.innerHTML=`
-<input type="text" value="${note.created||''}" oninput="updateDate(${note.id},this.value)">
-<textarea oninput="updateNote(${note.id},this.value)">${note.content||''}</textarea>
-<input type="color" value="${note.color}" onchange="changeColor(${note.id},this.value)">
-<div class="actions">
-<button onclick="deleteNote(${note.id})">🗑</button>
-</div>`;
-
-        div.addEventListener("dragstart",()=>draggedId=note.id);
-        div.addEventListener("dragover",(e)=>e.preventDefault());
-        div.addEventListener("drop",()=>reorderNotes(draggedId,note.id));
-
-        container.appendChild(div);
-    });
-
-    updateExportButton();
-}
-
-function updateNote(id,value){
-    let data=getUserData();
-    let note=data.notes.find(n=>n.id===id);
-    if(note){
-        note.content=value;
-        saveUserData(data);
-        updateExportButton();
-    }
-}
-
-function updateDate(id,value){
-    let data=getUserData();
-    let note=data.notes.find(n=>n.id===id);
-    if(note){
-        note.created=value;
-        saveUserData(data);
-    }
-}
-
-function deleteNote(id){
-    let data=getUserData();
-    data.notes=data.notes.filter(n=>n.id!==id);
-    saveUserData(data);
-    renderNotes();
-}
-
-function changeColor(id,color){
-    let data=getUserData();
-    let note=data.notes.find(n=>n.id===id);
-    if(note){
-        note.color=color;
-        saveUserData(data);
-    }
-}
-
-function reorderNotes(id1,id2){
-    let data=getUserData();
-    let notes=data.notes;
-    let i1=notes.findIndex(n=>n.id===id1);
-    let i2=notes.findIndex(n=>n.id===id2);
-    [notes[i1],notes[i2]]=[notes[i2],notes[i1]];
-    saveUserData(data);
-    renderNotes();
-}
-
-/* EXPORT */
-function exportExcel(){
-    let data=getUserData();
-    let hasValidContent=data.notes.some(n=>n.content&&n.content.trim()!=="");
-    if(!hasValidContent){
-        alert("No valid note content to export.");
-        return;
-    }
-
-    let csv="SNo,Created Date,Content\n";
-    data.notes.forEach((n,index)=>{
-        let created=n.created||"";
-        let content=n.content?n.content.replace(/"/g,'""'):"";
-        csv+=`${index+1},"${created}","${content}"\n`;
-    });
-
-    let blob=new Blob([csv],{type:"text/csv"});
-    let a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download=currentUser+"_notes_report.csv";
-    a.click();
-}
-
-/* DARK MODE */
-function toggleDark(){
-    document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode",document.body.classList.contains("dark"));
-}
-
-/* AUTO LOGIN */
-window.onload=function(){
-    let u=localStorage.getItem("loggedInUser");
-    if(u){
-        currentUser=u;
-        loadApp();
-    }
-    if(localStorage.getItem("darkMode")==="true"){
-        document.body.classList.add("dark");
-    }
-};
-
 </script>
 
 </body>
